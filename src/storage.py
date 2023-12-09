@@ -6,6 +6,11 @@ class Storage:
     def add_chat(self, chat_id: int, members_ids: list[int]):
         self.chats.append(Chat(chat_id=chat_id, members_ids=members_ids))
 
+    def add_member(self, chat_id: int, member_id: int):
+        for chat in self.chats:
+            if chat.id == chat_id:
+                chat.add_member(member_id)
+
 
 class Chat:
     def __init__(self, chat_id: int, members_ids: list[int]):

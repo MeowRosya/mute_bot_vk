@@ -1,5 +1,6 @@
 import random
 import time
+import asyncio
 
 from config import bot
 
@@ -22,10 +23,10 @@ async def on_startup():
     for chat in conversations.items:
         if chat.conversation.peer.id > 2000000000:
             buffer.append(chat.conversation.peer.id)
-    for chat_id in buffer:
-        members = await bot.api.messages.get_conversation_members(peer_id=chat_id)
+    for chat_peer_id in buffer:
+        members = await bot.api.messages.get_conversation_members(peer_id=chat_peer_id)
         storage.add_chat(
-            chat_id=chat_id, members_ids=list(map(lambda x: x.member_id, members.items))
+            chat_id=chat_peer_id, members_ids=list(map(lambda x: x.member_id, members.items))
         )
 
 
@@ -35,7 +36,7 @@ async def chat_message(message: Message):
         current_time = time.time()
         if current_time - storage.muted.get(message.from_id) > 60:
             storage.muted.pop(message.from_id)
-            storage.chats.add_member(message.from_id)
+            storage.add_member(message.peer_id, message.from_id)
             return
         await delete(message.peer_id, message.conversation_message_id)
         return
@@ -46,11 +47,13 @@ async def chat_message(message: Message):
     if message.from_id not in list(map(lambda x: x.id, chat.members)):
         storage.muted.update({message.from_id: time.time()})
         await delete(message.peer_id, message.conversation_message_id)
-        await bot.api.messages.send(
-            user_id=message.from_id,
+        message_id = await bot.api.messages.send(
+            peer_id=message.peer_id,
             random_id=random.getrandbits(128),
-            message="Рады что вы решили присоединиться к нашему сообществу! Просьба подождать 1 минуту. Это проверка на спам ботов. Будем рады, если вы подождете!",
+            message="К нам присоединился новый пользователь. Добро пожаловать! В течении первой минуты общения, вы не можете писать сообщения. Просим прощения за неудобство",
         )
+        await asyncio.sleep(20)
+        await bot.api.messages.delete(peer_id=message.peer_id, message_ids=[message_id], delete_for_all=True)
 
 
 if __name__ == "__main__":
