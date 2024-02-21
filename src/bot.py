@@ -83,6 +83,7 @@ async def delete(peer_id, message_id):
 
 
 async def init():
+    global storage
     # obtaining posts from groups
     posts = await get_wall_posts(domain=DOMAIN, group_id=GROUP_ID)
     res = handle_main_group_posts(posts)
@@ -105,7 +106,8 @@ async def init():
         members = await bot.api.messages.get_conversation_members(
             peer_id=chat.conversation.peer.id
         )
-        map(lambda x: storage.add_id(x.member_id), members.items)
+        for member in members.items:
+            storage.add_id(member.member_id)
 
 
 @bot.on.chat_message()
@@ -126,25 +128,27 @@ async def chat_message(message: Message):
             except:
                 pass
     elif user_id not in storage.muted_ids:
-        storage.muted_ids.update({user_id: time.time()})
-        await delete(peer_id, cmid)
-        message_id = await bot.api.messages.send(
-            peer_id=peer_id,
-            random_id=random.getrandbits(128),
-            message="К нам присоединился новый пользователь. Добро пожаловать! "
-            + "В течении первой минуты общения, вы не можете писать сообщения. "
-            + "Просим прощения за неудобство",
-        )
-        await asyncio.sleep(20)
-        await bot.api.messages.delete(
-            peer_id=peer_id, message_ids=[message_id], delete_for_all=True
-        )
-    else:
-        if time.time() - storage.muted_ids.get(user_id) > 60:
-            storage.muted_ids.pop(user_id)
-            storage.add_id(user_id=user_id)
-            return
-        await delete(peer_id, cmid)
+        await message.answer("Вы временно заблочены по IP")
+        storage.add_id(user_id=user_id)
+    #     storage.muted_ids.update({user_id: time.time()})
+    #     await delete(peer_id, cmid)
+    #     message_id = await bot.api.messages.send(
+    #         peer_id=peer_id,
+    #         random_id=random.getrandbits(128),
+    #         message="К нам присоединился новый пользователь. Добро пожаловать! "
+    #         + "В течении первой минуты общения, вы не можете писать сообщения. "
+    #         + "Просим прощения за неудобство",
+    #     )
+    #     await asyncio.sleep(20)
+    #     await bot.api.messages.delete(
+    #         peer_id=peer_id, message_ids=[message_id], delete_for_all=True
+    #     )
+    # else:
+    #     if time.time() - storage.muted_ids[user_id] > 60:
+    #         storage.muted_ids.pop(user_id)
+    #         storage.add_id(user_id=user_id)
+    #         return
+    #     await delete(peer_id, cmid)
 
 
 @bot.on.private_message(text="Начать")
