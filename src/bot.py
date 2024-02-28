@@ -126,7 +126,7 @@ async def chat_message(message: Message):
                 command = args[1]
             if command in equality:
                 await message.answer(
-                    args, attachment=random.choice(equality[command].value)
+                    command, attachment=random.choice(equality[command].value)
                 )
     elif user_id not in storage.muted_ids:
         storage.muted_ids.update({user_id: time.time()})
