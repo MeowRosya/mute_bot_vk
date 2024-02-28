@@ -119,14 +119,15 @@ async def chat_message(message: Message):
         if message.text == "Начать":
             await message.answer("Врываюсь", keyboard=keyboard)
         elif message.text.startswith("[club208044622|@anime_syndi_cute]"):
+            args = message.text.split(" ")
             try:
-                args = message.text.split(" ")[1]
-                if args in equality:
-                    await message.answer(
-                        args, attachment=random.choice(equality[args].value)
-                    )
+                command = args[1] + " " + args[2]
             except:
-                pass
+                command = args[1]
+            if command in equality:
+                await message.answer(
+                    args, attachment=random.choice(equality[command].value)
+                )
     elif user_id not in storage.muted_ids:
         storage.muted_ids.update({user_id: time.time()})
         await delete(peer_id, cmid)
