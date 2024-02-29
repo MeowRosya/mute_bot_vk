@@ -28,16 +28,16 @@ from wall import (
 
 class Ref:
     def __init__(self, value: list[Any]):
-        self = value
+        self.value = value
 
 
-photos = []
-jokes = []
-quotes = []
-audios = []
-mix = []
-horny_photos = []
-horny_jokes = []
+photos = Ref([])
+jokes = Ref([])
+quotes = Ref([])
+audios = Ref([])
+mix = Ref([])
+horny_photos = Ref([])
+horny_jokes = Ref([])
 
 
 class ButtonsLabels(Enum):
@@ -51,27 +51,27 @@ class ButtonsLabels(Enum):
 
 
 equality = {
-    ButtonsLabels.PHOTO: photos,
-    ButtonsLabels.JOKE: jokes,
-    ButtonsLabels.QUOTE: quotes,
-    ButtonsLabels.AUDIO: audios,
-    ButtonsLabels.MIX: mix,
-    ButtonsLabels.HORNY_PHOTO: horny_photos,
-    ButtonsLabels.HORNY_JOKE: horny_jokes,
+    ButtonsLabels.PHOTO.value: photos,
+    ButtonsLabels.JOKE.value: jokes,
+    ButtonsLabels.QUOTE.value: quotes,
+    ButtonsLabels.AUDIO.value: audios,
+    ButtonsLabels.MIX.value: mix,
+    ButtonsLabels.HORNY_PHOTO.value: horny_photos,
+    ButtonsLabels.HORNY_JOKE.value: horny_jokes,
     
 }
 
 keyboard = (
     Keyboard(one_time=False, inline=False)
-    .add(Text(ButtonsLabels.PHOTO), color=KeyboardButtonColor.POSITIVE)
-    .add(Text(ButtonsLabels.JOKE), color=KeyboardButtonColor.POSITIVE)
+    .add(Text(ButtonsLabels.PHOTO.value), color=KeyboardButtonColor.POSITIVE)
+    .add(Text(ButtonsLabels.JOKE.value), color=KeyboardButtonColor.POSITIVE)
     .row()
-    .add(Text(ButtonsLabels.AUDIO), color=KeyboardButtonColor.NEGATIVE)
-    .add(Text(ButtonsLabels.MIX), color=KeyboardButtonColor.NEGATIVE)
+    .add(Text(ButtonsLabels.AUDIO.value), color=KeyboardButtonColor.NEGATIVE)
+    .add(Text(ButtonsLabels.MIX.value), color=KeyboardButtonColor.NEGATIVE)
     .row()
-    .add(Text(ButtonsLabels.QUOTE), color=KeyboardButtonColor.POSITIVE)
-    .add(Text(ButtonsLabels.HORNY_PHOTO), color=KeyboardButtonColor.POSITIVE)
-    .add(Text(ButtonsLabels.HORNY_JOKE), color=KeyboardButtonColor.POSITIVE)
+    .add(Text(ButtonsLabels.QUOTE.value), color=KeyboardButtonColor.POSITIVE)
+    .add(Text(ButtonsLabels.HORNY_PHOTO.value), color=KeyboardButtonColor.POSITIVE)
+    .add(Text(ButtonsLabels.HORNY_JOKE.value), color=KeyboardButtonColor.POSITIVE)
     .get_json()
 )
 
@@ -83,20 +83,19 @@ async def delete(peer_id, message_id):
 
 
 async def init():
-    global photos, audios, jokes, quotes, mix, horny_jokes, horny_photos
     # obtaining posts from groups
     posts = await get_wall_posts(domain=DOMAIN, group_id=GROUP_ID)
     res = handle_main_group_posts(posts)
-    photos += res.photos
-    audios += res.audios
-    jokes += res.jokes
-    quotes += res.quotes
-    mix += res.mix
+    photos.value = res.photos
+    audios.value = res.audios
+    jokes.value = res.jokes
+    quotes.value = res.quotes
+    mix.value = res.mix
 
     posts = await get_wall_posts(domain=DOMAIN_18, group_id=HORNY_GROUP_ID)
     res = handle_hent_group_posts(posts)
-    horny_photos += res.horny_photos
-    horny_jokes += res.horny_jokes
+    horny_photos.value = res.horny_photos
+    horny_jokes.value = res.horny_jokes
 
     # adding to storage people that are already in chats to prevent delete message
     conversations = await bot.api.messages.get_conversations()
@@ -123,7 +122,7 @@ async def chat_message(message: Message):
             command = message.text.replace(TRIGGER, "")
             if command in equality:
                 await message.answer(
-                    command, attachment=random.choice(equality[command])
+                    command, attachment=random.choice(equality[command].value)
                 )
     elif not user.is_muted:
         mute(user)
@@ -152,12 +151,12 @@ async def start(message: Message):
 
 @bot.on.private_message(text="Статистика")
 async def show_statistic(message: Message):
-    text = f"""Артов -- {len(photos)}
-Шуток -- {len(jokes)}
-Цитат -- {len(quotes)}
-Хорни -- {len(horny_photos)}
-Хорни шутки -- {len(horny_jokes)}
-MIX -- {len(mix)}"""
+    text = f"""Артов -- {len(photos.value)}
+Шуток -- {len(jokes.value)}
+Цитат -- {len(quotes.value)}
+Хорни -- {len(horny_photos.value)}
+Хорни шутки -- {len(horny_jokes.value)}
+MIX -- {len(mix.value)}"""
     await message.answer(text)
 
 
@@ -166,19 +165,18 @@ async def send_message_private(message: Message):
     if message.text not in equality:
         return
     await message.answer(
-        message.text, attachment=random.choice(equality[message.text])
+        message.text, attachment=random.choice(equality[message.text].value)
     )
 
 
 @bot.on.raw_event(GroupEventType.WALL_POST_NEW, dataclass=GroupTypes.WallPostNew)
 async def new_post(event: GroupTypes.WallPostNew):
-    global photos, audios, jokes, quotes, mix
     res = handle_main_group_posts([event.object])
-    photos += res.photos
-    audios += res.audios
-    jokes += res.jokes
-    quotes += res.quotes
-    mix += res.mix
+    photos.value += res.photos
+    audios.value += res.audios
+    jokes.value += res.jokes
+    quotes.value += res.quotes
+    mix.value += res.mix
     if event.object.id:
         await bot.api.wall.create_comment(
             post_id=event.object.id,
@@ -189,14 +187,13 @@ async def new_post(event: GroupTypes.WallPostNew):
 
 @bot.loop_wrapper.interval(seconds=60)
 async def new_post_from_horny():
-    global horny_jokes, horny_photos
     border_time = int(time.time()) - 60
     posts = await update_databases(DOMAIN_18)
     if posts is None:
         return
     res = handle_hent_group_posts(posts=posts, border_time=border_time)
-    horny_jokes += res.horny_jokes
-    horny_photos += res.horny_photos
+    horny_jokes.value += res.horny_jokes
+    horny_photos.value += res.horny_photos
 
 
 def main():
