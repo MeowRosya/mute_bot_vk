@@ -31,6 +31,7 @@ HELLO_TEXT = (
 
 MESSAGE_UNDER_NEW_POST = f"⭐| Понравилось? Не забудь [https://vk.com/widget_community.php?act=a_subscribe_box&oid={GROUP_ID}&state=1|ПОДПИСАТЬСЯ] и поставить лайк!"
 
+TRIGGER = "[club208044622|@anime_syndi_cute] "
 
 service_api = API(token=SERVICE_TOKEN)
 bot = Bot(token=TOKEN)
