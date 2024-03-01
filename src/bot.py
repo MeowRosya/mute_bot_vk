@@ -58,7 +58,6 @@ equality = {
     ButtonsLabels.MIX.value: mix,
     ButtonsLabels.HORNY_PHOTO.value: horny_photos,
     ButtonsLabels.HORNY_JOKE.value: horny_jokes,
-    
 }
 
 keyboard = (
@@ -109,6 +108,7 @@ async def init():
             user = UserStorage.get_user(member.member_id)
             trust(user)
 
+
 @bot.on.chat_message()
 async def chat_message(message: Message):
     user_id = message.from_id
@@ -135,7 +135,9 @@ async def chat_message(message: Message):
             + "Просим прощения за неудобство",
         )
         await asyncio.sleep(20)
-        await delete(peer_id=peer_id, message_id=message_id)
+        await bot.api.messages.delete(
+            peer_id=peer_id, message_ids=[message_id], delete_for_all=True
+        )
     elif user.is_muted and user.is_time_to_umnute():
         unmute(user)
         trust(user)
