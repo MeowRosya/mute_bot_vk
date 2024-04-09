@@ -4,18 +4,13 @@ from vkbottle.api import API
 TOKEN = ""
 SERVICE_TOKEN = ""
 
-HOST = "server"
-
-with open("src/tokens/TOKEN", "r") as f:
-    TOKEN = f.read().replace("\n", "")
+# with open("src/tokens/TOKEN", "r") as f:
+#     TOKEN = f.read().replace("\n", "")
 with open("src/tokens/SERVICE_TOKEN", "r") as f:
     SERVICE_TOKEN = f.read().replace("\n", "")
 
 GROUP_ID = -208044622
 HORNY_GROUP_ID = -208875807
-
-DOMAIN = "anime_syndi_cute"
-DOMAIN_18 = "otcrovenie_sindi_cute"
 
 HELLO_TEXT = (
     "__________________________\n"

@@ -9,8 +9,6 @@ from vkbottle import GroupEventType, GroupTypes, Keyboard, KeyboardButtonColor, 
 from vkbottle.bot import Message
 
 from config import (
-    DOMAIN,
-    DOMAIN_18,
     GROUP_ID,
     HELLO_TEXT,
     HORNY_GROUP_ID,
@@ -83,7 +81,7 @@ async def delete(peer_id, message_id):
 
 async def init():
     # obtaining posts from groups
-    posts = await get_wall_posts(domain=DOMAIN, group_id=GROUP_ID)
+    posts = await get_wall_posts(group_id=GROUP_ID)
     res = handle_main_group_posts(posts)
     photos.value = res.photos
     audios.value = res.audios
@@ -91,7 +89,7 @@ async def init():
     quotes.value = res.quotes
     mix.value = res.mix
 
-    posts = await get_wall_posts(domain=DOMAIN_18, group_id=HORNY_GROUP_ID)
+    posts = await get_wall_posts(group_id=HORNY_GROUP_ID)
     res = handle_hent_group_posts(posts)
     horny_photos.value = res.horny_photos
     horny_jokes.value = res.horny_jokes
@@ -190,7 +188,7 @@ async def new_post(event: GroupTypes.WallPostNew):
 @bot.loop_wrapper.interval(seconds=60)
 async def new_post_from_horny():
     border_time = int(time.time()) - 60
-    posts = await update_databases(DOMAIN_18)
+    posts = await update_databases(HORNY_GROUP_ID)
     if posts is None:
         return
     res = handle_hent_group_posts(posts=posts, border_time=border_time)
