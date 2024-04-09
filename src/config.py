@@ -4,8 +4,8 @@ from vkbottle.api import API
 TOKEN = ""
 SERVICE_TOKEN = ""
 
-# with open("src/tokens/TOKEN", "r") as f:
-#     TOKEN = f.read().replace("\n", "")
+with open("src/tokens/TOKEN", "r") as f:
+    TOKEN = f.read().replace("\n", "")
 with open("src/tokens/SERVICE_TOKEN", "r") as f:
     SERVICE_TOKEN = f.read().replace("\n", "")
 
