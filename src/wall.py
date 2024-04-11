@@ -9,9 +9,7 @@ async def get_wall_posts(group_id: int) -> list[WallWallpostFull]:
     offset = 0
 
     while True:
-        res = await service_api.wall.get(
-            owner_id=group_id, offset=offset, count=100
-        )
+        res = await service_api.wall.get(owner_id=group_id, offset=offset, count=100)
         recieved_posts = res.items
         if recieved_posts is None or len(recieved_posts) == 0:
             break
@@ -21,12 +19,13 @@ async def get_wall_posts(group_id: int) -> list[WallWallpostFull]:
 
     return posts
 
+
 def handle_post_attachments(post: WallWallpostFull) -> tuple[list[str], list[str]]:
     """Returns array of stringify attachments of photos and audios"""
-    
+
     buffer_audio: list[str] = []
     buffer_photo: list[str] = []
-    
+
     if post.attachments is None:
         return buffer_photo, buffer_audio
 
@@ -34,12 +33,13 @@ def handle_post_attachments(post: WallWallpostFull) -> tuple[list[str], list[str
         if attachment.audio:
             attachment = f"audio{attachment.audio.owner_id}_{attachment.audio.id}"
             buffer_audio.append(attachment)
-                
+
         elif attachment.photo:
             attachment = f"photo{attachment.photo.owner_id}_{attachment.photo.id}"
             buffer_photo.append(attachment)
-    
+
     return buffer_photo, buffer_audio
+
 
 def handle_main_group_posts(posts: list[WallWallpostFull]) -> VkAttachments:
     attachments = VkAttachments()
@@ -91,10 +91,10 @@ def handle_hent_group_posts(
 async def update_databases(group_id: int):
     try:
         response, count, posts = await service_api.wall.get(owner_id=group_id, count=3)
-        return posts[1][:]
+        return posts[1]
     except:
         return None
-    
+
 
 if __name__ == "__main__":
     asyncio.run(get_wall_posts(group_id=-208044622))

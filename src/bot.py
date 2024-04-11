@@ -24,18 +24,28 @@ from wall import (
 )
 
 
-class Ref:
-    def __init__(self, value: list[Any]):
-        self.value = value
+class Storage:
+    def __init__(self):
+        self.photos: list[str] = []
+        self.jokes: list[str] = []
+        self.quotes: list[str] = []
+        self.audios: list[str] = []
+        self.mix: list[str] = []
+        self.horny_photos: list[str] = []
+        self.horny_jokes: list[str] = []
+
+    def stats(self):
+        return (
+            f"Артов -- {len(self.photos)}"
+            + f"Шуток -- {len(self.jokes)}"
+            + f"Цитат -- {len(self.quotes)}"
+            + f"Хорни -- {len(self.horny_photos)}"
+            + f"Хорни шутки -- {len(self.horny_jokes)}"
+            + f"MIX -- {len(self.mix)}"
+        )
 
 
-photos = Ref([])
-jokes = Ref([])
-quotes = Ref([])
-audios = Ref([])
-mix = Ref([])
-horny_photos = Ref([])
-horny_jokes = Ref([])
+storage = Storage()
 
 
 class ButtonsLabels(Enum):
@@ -49,13 +59,13 @@ class ButtonsLabels(Enum):
 
 
 equality = {
-    ButtonsLabels.PHOTO.value: photos,
-    ButtonsLabels.JOKE.value: jokes,
-    ButtonsLabels.QUOTE.value: quotes,
-    ButtonsLabels.AUDIO.value: audios,
-    ButtonsLabels.MIX.value: mix,
-    ButtonsLabels.HORNY_PHOTO.value: horny_photos,
-    ButtonsLabels.HORNY_JOKE.value: horny_jokes,
+    ButtonsLabels.PHOTO.value: storage.photos,
+    ButtonsLabels.JOKE.value: storage.jokes,
+    ButtonsLabels.QUOTE.value: storage.quotes,
+    ButtonsLabels.AUDIO.value: storage.audios,
+    ButtonsLabels.MIX.value: storage.mix,
+    ButtonsLabels.HORNY_PHOTO.value: storage.horny_photos,
+    ButtonsLabels.HORNY_JOKE.value: storage.horny_jokes,
 }
 
 keyboard = (
@@ -83,16 +93,16 @@ async def init():
     # obtaining posts from groups
     posts = await get_wall_posts(group_id=GROUP_ID)
     res = handle_main_group_posts(posts)
-    photos.value = res.photos
-    audios.value = res.audios
-    jokes.value = res.jokes
-    quotes.value = res.quotes
-    mix.value = res.mix
+    storage.photos += res.photos
+    storage.audios += res.audios
+    storage.jokes += res.jokes
+    storage.quotes += res.quotes
+    storage.mix += res.mix
 
     posts = await get_wall_posts(group_id=HORNY_GROUP_ID)
     res = handle_hent_group_posts(posts)
-    horny_photos.value = res.horny_photos
-    horny_jokes.value = res.horny_jokes
+    storage.horny_photos += res.horny_photos
+    storage.horny_jokes += res.horny_jokes
 
     # adding to storage people that are already in chats to prevent delete message
     conversations = await bot.api.messages.get_conversations()
@@ -120,7 +130,7 @@ async def chat_message(message: Message):
             command = message.text.replace(TRIGGER, "")
             if command in equality:
                 await message.answer(
-                    command, attachment=random.choice(equality[command].value)
+                    command, attachment=random.choice(equality[command])
                 )
     elif not user.is_muted:
         mute(user)
@@ -151,12 +161,7 @@ async def start(message: Message):
 
 @bot.on.private_message(text="Статистика")
 async def show_statistic(message: Message):
-    text = f"""Артов -- {len(photos.value)}
-Шуток -- {len(jokes.value)}
-Цитат -- {len(quotes.value)}
-Хорни -- {len(horny_photos.value)}
-Хорни шутки -- {len(horny_jokes.value)}
-MIX -- {len(mix.value)}"""
+    text = storage.stats()
     await message.answer(text)
 
 
@@ -164,19 +169,17 @@ MIX -- {len(mix.value)}"""
 async def send_message_private(message: Message):
     if message.text not in equality:
         return
-    await message.answer(
-        message.text, attachment=random.choice(equality[message.text].value)
-    )
+    await message.answer(message.text, attachment=random.choice(equality[message.text]))
 
 
 @bot.on.raw_event(GroupEventType.WALL_POST_NEW, dataclass=GroupTypes.WallPostNew)
 async def new_post(event: GroupTypes.WallPostNew):
     res = handle_main_group_posts([event.object])
-    photos.value += res.photos
-    audios.value += res.audios
-    jokes.value += res.jokes
-    quotes.value += res.quotes
-    mix.value += res.mix
+    storage.photos += res.photos
+    storage.audios += res.audios
+    storage.jokes += res.jokes
+    storage.quotes += res.quotes
+    storage.mix += res.mix
     if event.object.id:
         await bot.api.wall.create_comment(
             post_id=event.object.id,
@@ -192,8 +195,8 @@ async def new_post_from_horny():
     if posts is None:
         return
     res = handle_hent_group_posts(posts=posts, border_time=border_time)
-    horny_jokes.value += res.horny_jokes
-    horny_photos.value += res.horny_photos
+    storage.horny_jokes += res.horny_jokes
+    storage.horny_photos += res.horny_photos
 
 
 def main():
