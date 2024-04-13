@@ -1,13 +1,10 @@
 from vkbottle.bot import Bot
 from vkbottle.api import API
+import os
 
-TOKEN = ""
-SERVICE_TOKEN = ""
+TOKEN = os.getenv("TOKEN")
+SERVICE_TOKEN = os.getenv("SERVICE_TOKEN")
 
-with open("src/tokens/TOKEN", "r") as f:
-    TOKEN = f.read().replace("\n", "")
-with open("src/tokens/SERVICE_TOKEN", "r") as f:
-    SERVICE_TOKEN = f.read().replace("\n", "")
 
 GROUP_ID = -208044622
 HORNY_GROUP_ID = -208875807
