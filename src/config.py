@@ -1,13 +1,18 @@
 from vkbottle.bot import Bot
 from vkbottle.api import API
 import os
+from dotenv import load_dotenv
+
+dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
+
+if os.path.exists(dotenv_path):
+    load_dotenv(dotenv_path)
 
 TOKEN = os.getenv("TOKEN")
 SERVICE_TOKEN = os.getenv("SERVICE_TOKEN")
+GROUP_ID = os.getenv("GROUP_ID")
+HORNY_GROUP_ID = os.getenv("HORNY_GROUP_ID")
 
-
-GROUP_ID = -208044622
-HORNY_GROUP_ID = -208875807
 
 HELLO_TEXT = (
     "__________________________\n"
